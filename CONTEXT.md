@@ -72,6 +72,10 @@ _Avoid_: blackboard, global memory
 The inspectable record of all messages, tool calls, results, errors, refusals, and approvals within a task.
 _Avoid_: log, transcript
 
+**Outcome**:
+The top-level result summary of a trace, including completion status, the final message reference, and a short summary.
+_Avoid_: final report, message content
+
 **Protocol Version**:
 The version of the communication protocol used by a trace. A trace has one protocol version for all messages it contains.
 _Avoid_: message version, schema version
