@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "test:ui": "vitest run",
+    "build:ui": "vite build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "vite": "^7.3.0",
+    "typescript": "^5.9.3",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "vitest": "^4.0.15",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "jsdom": "^27.3.0"
+  },
+  "devDependencies": {}
+}

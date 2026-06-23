@@ -3,3 +3,5 @@ skills-lock.json
 traces/runs/
 __pycache__/
 *.py[cod]
+node_modules/
+ui/dist/
