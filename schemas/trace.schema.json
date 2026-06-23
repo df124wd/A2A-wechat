@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/df124wd/A2A-wechat/schemas/trace.schema.json",
+  "title": "A2A v0 Trace",
+  "type": "object",
+  "required": ["protocol_version", "trace_id", "participants", "messages", "outcome"],
+  "properties": {
+    "protocol_version": {
+      "const": "a2a-trace-v0"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace_[A-Za-z0-9_-]+$"
+    },
+    "participants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/participant"
+      }
+    },
+    "messages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/message"
+      }
+    },
+    "outcome": {
+      "$ref": "#/$defs/outcome"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "participant": {
+      "type": "object",
+      "required": ["participant_id", "kind", "display_name", "capabilities"],
+      "properties": {
+        "participant_id": {
+          "type": "string",
+          "pattern": "^(human|agent|tool)\\.[a-z][a-z0-9_-]*(\\.[a-z][a-z0-9_-]*)*$"
+        },
+        "kind": {
+          "enum": ["human", "agent", "tool"]
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "message": {
+      "type": "object",
+      "required": ["envelope", "content"],
+      "properties": {
+        "envelope": {
+          "$ref": "#/$defs/envelope"
+        },
+        "content": {
+          "$ref": "#/$defs/content"
+        }
+      },
+      "additionalProperties": false
+    },
+    "envelope": {
+      "type": "object",
+      "required": [
+        "message_id",
+        "trace_id",
+        "task_id",
+        "conversation_id",
+        "sequence",
+        "timestamp",
+        "sender",
+        "intent"
+      ],
+      "properties": {
+        "message_id": {
+          "type": "string",
+          "pattern": "^msg_[A-Za-z0-9_-]+$"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^trace_[A-Za-z0-9_-]+$"
+        },
+        "task_id": {
+          "type": "string",
+          "pattern": "^task_[A-Za-z0-9_-]+$"
+        },
+        "conversation_id": {
+          "type": "string",
+          "pattern": "^conv_[A-Za-z0-9_-]+$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "sender": {
+          "$ref": "#/$defs/participant_id"
+        },
+        "receiver": {
+          "$ref": "#/$defs/participant_id"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intent": {
+          "enum": [
+            "request",
+            "delegate",
+            "response",
+            "tool_call",
+            "tool_result",
+            "notify",
+            "refusal",
+            "error",
+            "approval_request",
+            "approval_result"
+          ]
+        },
+        "correlation_id": {
+          "type": "string",
+          "pattern": "^corr_[A-Za-z0-9_-]+$"
+        },
+        "reply_to": {
+          "type": "string",
+          "pattern": "^msg_[A-Za-z0-9_-]+$"
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["receiver"]
+        },
+        {
+          "required": ["capability"]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "content": {
+      "type": "object",
+      "required": ["summary", "data"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["status", "final_message_id", "summary"],
+      "properties": {
+        "status": {
+          "enum": ["completed", "failed", "interrupted"]
+        },
+        "final_message_id": {
+          "type": "string",
+          "pattern": "^msg_[A-Za-z0-9_-]+$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "participant_id": {
+      "type": "string",
+      "pattern": "^(human|agent|tool)\\.[a-z][a-z0-9_-]*(\\.[a-z][a-z0-9_-]*)*$"
+    }
+  }
+}
