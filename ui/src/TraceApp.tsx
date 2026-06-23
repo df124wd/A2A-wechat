@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import trace from "../../traces/examples/research-to-write.seed.json";
 
 type TraceMessage = {
@@ -19,6 +19,7 @@ type TraceMessage = {
 };
 
 type Trace = {
+  trace_id: string;
   outcome: {
     status: string;
     final_message_id: string;
@@ -30,7 +31,9 @@ type Trace = {
 const curatedTrace = trace as Trace;
 
 export function TraceApp() {
-  const messages = [...curatedTrace.messages].sort(
+  const [activeTrace, setActiveTrace] = useState(curatedTrace);
+  const [traceName, setTraceName] = useState("Curated Research-to-Write Trace");
+  const messages = [...activeTrace.messages].sort(
     (a, b) => a.envelope.sequence - b.envelope.sequence
   );
   const [selectedMessageId, setSelectedMessageId] = useState(
@@ -39,22 +42,55 @@ export function TraceApp() {
   const selectedMessage =
     messages.find((message) => message.envelope.message_id === selectedMessageId) ??
     messages[0];
+  const selectedIndex = messages.findIndex(
+    (message) => message.envelope.message_id === selectedMessage?.envelope.message_id
+  );
+
+  async function loadTrace(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const uploadedTrace = JSON.parse(await readFileText(file)) as Trace;
+    setActiveTrace(uploadedTrace);
+    setTraceName(file.name);
+    setSelectedMessageId(uploadedTrace.messages[0]?.envelope.message_id);
+  }
 
   return (
     <main>
       <section aria-labelledby="trace-loader-heading">
         <h1 id="trace-loader-heading">Trace Loader</h1>
-        <p>Curated Research-to-Write Trace</p>
+        <p>{traceName}</p>
+        <label>
+          Upload Trace JSON
+          <input type="file" accept="application/json,.json" onChange={loadTrace} />
+        </label>
         <dl>
           <dt>Status</dt>
-          <dd>{curatedTrace.outcome.status}</dd>
+          <dd>{activeTrace.outcome.status}</dd>
           <dt>Final Message</dt>
-          <dd>{curatedTrace.outcome.final_message_id}</dd>
+          <dd>{activeTrace.outcome.final_message_id}</dd>
+          <dt>Outcome</dt>
+          <dd>{activeTrace.outcome.summary}</dd>
         </dl>
       </section>
 
       <section aria-labelledby="timeline-heading">
         <h2 id="timeline-heading">Timeline</h2>
+        <button
+          type="button"
+          onClick={() => {
+            const nextMessage = messages[selectedIndex + 1];
+            if (nextMessage) {
+              setSelectedMessageId(nextMessage.envelope.message_id);
+            }
+          }}
+          disabled={selectedIndex < 0 || selectedIndex >= messages.length - 1}
+        >
+          Next message
+        </button>
         <ol>
           {messages.map((message) => (
             <li key={message.envelope.message_id}>
@@ -75,6 +111,19 @@ export function TraceApp() {
       {selectedMessage ? <MessageInspector message={selectedMessage} /> : null}
     </main>
   );
+}
+
+function readFileText(file: File): Promise<string> {
+  if ("text" in file && typeof file.text === "function") {
+    return file.text();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
 }
 
 function MessageInspector({ message }: { message: TraceMessage }) {
