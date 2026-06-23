@@ -5,6 +5,8 @@ import tempfile
 import unittest
 import json
 
+from tests.support import mock_model_env
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,6 +29,7 @@ class RunResearchToWriteCliTest(unittest.TestCase):
                     str(output_path),
                 ],
                 cwd=ROOT,
+                env=mock_model_env(),
                 text=True,
                 capture_output=True,
             )
@@ -98,6 +101,7 @@ class RunResearchToWriteCliTest(unittest.TestCase):
                 "Explain A2A communication.",
             ],
             cwd=ROOT,
+            env=mock_model_env(),
             text=True,
             capture_output=True,
         )

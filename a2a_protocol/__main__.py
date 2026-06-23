@@ -1,15 +1,22 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from a2a_protocol.model import ModelClient, ModelConfigError, MockModelClient, load_model_client
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas" / "trace.schema.json"
 SEARCH_FIXTURE_PATH = ROOT / "fixtures" / "search" / "research-to-write.json"
+RUN_RESEARCH_TO_WRITE_USAGE = (
+    "Usage: python -m a2a_protocol run research-to-write --task <text> "
+    "[--output <trace.json>] [--model-provider mock|alibaba]"
+)
 
 
 def envelope(
@@ -41,11 +48,26 @@ def envelope(
     return data
 
 
-def research_to_write_trace(task: str) -> dict:
+def writer_prompt(task: str, findings: list[str]) -> str:
+    return (
+        "Write a concise final answer for the user's task.\n"
+        f"Task: {task}\n"
+        "Research findings:\n"
+        + "\n".join(f"- {finding}" for finding in findings)
+    )
+
+
+def research_to_write_trace(task: str, model_client: ModelClient | None = None) -> dict:
     trace_id = "trace_research_to_write_run"
     task_id = "task_research_to_write_run"
     conversation_id = "conv_research_to_write_run"
     search_result = json.loads(SEARCH_FIXTURE_PATH.read_text(encoding="utf-8"))
+    model = model_client or MockModelClient()
+    findings = [
+        "A2A communication uses structured messages with routing and intent.",
+        "Trace records make collaboration inspectable.",
+    ]
+    writer_answer = model.complete(writer_prompt(task, findings))
 
     return {
         "protocol_version": "a2a-trace-v0",
@@ -173,10 +195,7 @@ def research_to_write_trace(task: str) -> dict:
                 "content": {
                     "summary": "Research Agent interprets raw search results for the Planner.",
                     "data": {
-                        "findings": [
-                            "A2A communication uses structured messages with routing and intent.",
-                            "Trace records make collaboration inspectable.",
-                        ],
+                        "findings": findings,
                         "source_message_id": "msg_search_result",
                     },
                 },
@@ -214,13 +233,7 @@ def research_to_write_trace(task: str) -> dict:
                 ),
                 "content": {
                     "summary": "Writer Agent returns the final response.",
-                    "data": {
-                        "answer": (
-                            "A2A communication coordinates agents through structured "
-                            "messages that carry routing, intent, content, correlation, "
-                            "and trace information."
-                        )
-                    },
+                    "data": {"answer": writer_answer},
                 },
             },
         ],
@@ -260,6 +273,39 @@ def validate_trace(trace_path: Path) -> list[str]:
     return []
 
 
+def parse_research_to_write_options(args: list[str]) -> tuple[str, Path, str | None]:
+    task: str | None = None
+    output_path: Path | None = None
+    model_provider: str | None = None
+
+    index = 0
+    while index < len(args):
+        option = args[index]
+        if option not in ("--task", "--output", "--model-provider"):
+            raise ValueError(RUN_RESEARCH_TO_WRITE_USAGE)
+        if index + 1 >= len(args):
+            raise ValueError(RUN_RESEARCH_TO_WRITE_USAGE)
+
+        value = args[index + 1]
+        if option == "--task":
+            task = value
+        elif option == "--output":
+            output_path = Path(value)
+        elif option == "--model-provider":
+            model_provider = value
+
+        index += 2
+
+    if task is None:
+        raise ValueError(RUN_RESEARCH_TO_WRITE_USAGE)
+
+    return (
+        task,
+        output_path or ROOT / "traces" / "runs" / "research-to-write.latest.json",
+        model_provider,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if len(args) == 2 and args[0] == "validate":
@@ -274,35 +320,31 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args[:2] == ["run", "research-to-write"]:
-        if len(args) not in (4, 6) or args[2] != "--task":
-            print(
-                "Usage: python -m a2a_protocol run research-to-write --task <text> [--output <trace.json>]",
-                file=sys.stderr,
-            )
+        try:
+            task, output_path, model_provider = parse_research_to_write_options(args[2:])
+        except ValueError as error:
+            print(str(error), file=sys.stderr)
             return 2
 
-        if len(args) == 6:
-            if args[4] != "--output":
-                print(
-                    "Usage: python -m a2a_protocol run research-to-write --task <text> [--output <trace.json>]",
-                    file=sys.stderr,
-                )
-                return 2
-            output_path = Path(args[5])
-        else:
-            output_path = ROOT / "traces" / "runs" / "research-to-write.latest.json"
+        try:
+            model_env = dict(os.environ)
+            if model_provider is not None:
+                model_env["A2A_MODEL_PROVIDER"] = model_provider
+            model_client = load_model_client(model_env)
+        except ModelConfigError as error:
+            print(str(error), file=sys.stderr)
+            return 1
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(
-            json.dumps(research_to_write_trace(args[3]), indent=2),
+            json.dumps(research_to_write_trace(task, model_client), indent=2),
             encoding="utf-8",
         )
         print(f"wrote: {output_path}")
         return 0
 
     print(
-        "Usage: python -m a2a_protocol validate <trace.json> | "
-        "python -m a2a_protocol run research-to-write --task <text> [--output <trace.json>]",
+        f"Usage: python -m a2a_protocol validate <trace.json> | {RUN_RESEARCH_TO_WRITE_USAGE}",
         file=sys.stderr,
     )
     return 2

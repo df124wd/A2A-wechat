@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from tests.support import mock_model_env
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,6 +29,7 @@ class FixtureSearchToolTest(unittest.TestCase):
                     str(output_path),
                 ],
                 cwd=ROOT,
+                env=mock_model_env(),
                 text=True,
                 capture_output=True,
             )
@@ -77,6 +80,7 @@ class FixtureSearchToolTest(unittest.TestCase):
                     str(output_path),
                 ],
                 cwd=ROOT,
+                env=mock_model_env(),
                 text=True,
                 capture_output=True,
             )
