@@ -1,0 +1,17 @@
+{
+  "query": "Explain A2A communication.",
+  "results": [
+    {
+      "rank": 1,
+      "title": "A2A Communication Basics",
+      "url": "https://example.com/a2a-communication-basics",
+      "snippet": "A2A communication coordinates agents through structured messages, routing, intent, and traceable results."
+    },
+    {
+      "rank": 2,
+      "title": "Traceable Agent Collaboration",
+      "url": "https://example.com/traceable-agent-collaboration",
+      "snippet": "Inspectable traces help developers understand delegation, tool calls, and final responses."
+    }
+  ]
+}

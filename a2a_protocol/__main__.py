@@ -9,6 +9,7 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas" / "trace.schema.json"
+SEARCH_FIXTURE_PATH = ROOT / "fixtures" / "search" / "research-to-write.json"
 
 
 def envelope(
@@ -44,6 +45,7 @@ def research_to_write_trace(task: str) -> dict:
     trace_id = "trace_research_to_write_run"
     task_id = "task_research_to_write_run"
     conversation_id = "conv_research_to_write_run"
+    search_result = json.loads(SEARCH_FIXTURE_PATH.read_text(encoding="utf-8"))
 
     return {
         "protocol_version": "a2a-trace-v0",
@@ -72,6 +74,12 @@ def research_to_write_trace(task: str) -> dict:
                 "kind": "agent",
                 "display_name": "Writer Agent",
                 "capabilities": ["write.summary"],
+            },
+            {
+                "participant_id": "tool.search",
+                "kind": "tool",
+                "display_name": "Search Tool",
+                "capabilities": ["search.web"],
             },
         ],
         "messages": [
@@ -112,11 +120,50 @@ def research_to_write_trace(task: str) -> dict:
             },
             {
                 "envelope": envelope(
-                    "msg_research_response",
+                    "msg_research_tool_call",
                     trace_id,
                     task_id,
                     conversation_id,
                     3,
+                    "agent.researcher",
+                    "tool.search",
+                    "tool_call",
+                    "corr_search",
+                    "msg_planner_delegate_research",
+                ),
+                "content": {
+                    "summary": "Research Agent calls Search Tool for source material.",
+                    "data": {
+                        "tool_name": "search",
+                        "arguments": {"query": task},
+                    },
+                },
+            },
+            {
+                "envelope": envelope(
+                    "msg_search_result",
+                    trace_id,
+                    task_id,
+                    conversation_id,
+                    4,
+                    "tool.search",
+                    "agent.researcher",
+                    "tool_result",
+                    "corr_search",
+                    "msg_research_tool_call",
+                ),
+                "content": {
+                    "summary": "Search Tool returns raw fixture retrieval results.",
+                    "data": search_result,
+                },
+            },
+            {
+                "envelope": envelope(
+                    "msg_research_response",
+                    trace_id,
+                    task_id,
+                    conversation_id,
+                    5,
                     "agent.researcher",
                     "agent.planner",
                     "response",
@@ -124,12 +171,13 @@ def research_to_write_trace(task: str) -> dict:
                     "msg_planner_delegate_research",
                 ),
                 "content": {
-                    "summary": "Research Agent returns semi-scripted findings.",
+                    "summary": "Research Agent interprets raw search results for the Planner.",
                     "data": {
                         "findings": [
                             "A2A communication uses structured messages with routing and intent.",
                             "Trace records make collaboration inspectable.",
-                        ]
+                        ],
+                        "source_message_id": "msg_search_result",
                     },
                 },
             },
@@ -139,7 +187,7 @@ def research_to_write_trace(task: str) -> dict:
                     trace_id,
                     task_id,
                     conversation_id,
-                    4,
+                    6,
                     "agent.planner",
                     "agent.writer",
                     "delegate",
@@ -157,7 +205,7 @@ def research_to_write_trace(task: str) -> dict:
                     trace_id,
                     task_id,
                     conversation_id,
-                    5,
+                    7,
                     "agent.writer",
                     "human.user",
                     "response",
