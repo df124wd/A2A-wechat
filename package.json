@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "dev:ui": "vite --host 127.0.0.1",
     "test:ui": "vitest run",
     "build:ui": "vite build"
   },
