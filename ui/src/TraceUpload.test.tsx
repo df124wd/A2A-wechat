@@ -72,6 +72,14 @@ test("visually replays the loaded Trace in message sequence order", async () => 
 
   await userEvent.click(screen.getByRole("button", { name: "Next message" }));
 
+  expect(within(inspector).getByText("msg_planner_discover_research")).toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole("button", { name: "Next message" }));
+
+  expect(within(inspector).getByText("msg_capability_research_result")).toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole("button", { name: "Next message" }));
+
   expect(within(inspector).getByText("msg_planner_delegate_research")).toBeInTheDocument();
 
   await userEvent.click(screen.getByRole("button", { name: "Next message" }));

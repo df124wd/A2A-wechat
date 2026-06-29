@@ -41,6 +41,14 @@
       ]
     },
     {
+      "participant_id": "tool.capability_registry",
+      "kind": "tool",
+      "display_name": "Capability Registry",
+      "capabilities": [
+        "capability.discovery"
+      ]
+    },
+    {
       "participant_id": "tool.model",
       "kind": "tool",
       "display_name": "Model Service",
@@ -72,22 +80,70 @@
     },
     {
       "envelope": {
-        "message_id": "msg_planner_delegate_research",
+        "message_id": "msg_planner_discover_research",
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
         "sequence": 2,
         "timestamp": "2026-06-23T00:00:01Z",
         "sender": "agent.planner",
+        "receiver": "tool.capability_registry",
+        "intent": "tool_call",
+        "correlation_id": "corr_capability_research",
+        "reply_to": "msg_user_request"
+      },
+      "content": {
+        "summary": "Planner Agent asks Capability Registry who can handle research.web.",
+        "data": {
+          "tool_name": "capability_registry",
+          "capability": "research.web"
+        }
+      }
+    },
+    {
+      "envelope": {
+        "message_id": "msg_capability_research_result",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
+        "sequence": 3,
+        "timestamp": "2026-06-23T00:00:02Z",
+        "sender": "tool.capability_registry",
+        "receiver": "agent.planner",
+        "intent": "tool_result",
+        "correlation_id": "corr_capability_research",
+        "reply_to": "msg_planner_discover_research"
+      },
+      "content": {
+        "summary": "Capability Registry returns Research Agent as the research.web match.",
+        "data": {
+          "capability": "research.web",
+          "matches": [
+            "agent.researcher"
+          ]
+        }
+      }
+    },
+    {
+      "envelope": {
+        "message_id": "msg_planner_delegate_research",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
+        "sequence": 4,
+        "timestamp": "2026-06-23T00:00:03Z",
+        "sender": "agent.planner",
         "receiver": "agent.researcher",
         "intent": "delegate",
         "correlation_id": "corr_research",
-        "reply_to": "msg_user_request"
+        "reply_to": "msg_capability_research_result"
       },
       "content": {
         "summary": "Planner Agent delegates research to Research Agent.",
         "data": {
-          "goal": "Gather source material for: Explain A2A communication."
+          "goal": "Gather source material for: Explain A2A communication.",
+          "selected_by_capability": "research.web",
+          "source_message_id": "msg_capability_research_result"
         }
       }
     },
@@ -97,8 +153,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 3,
-        "timestamp": "2026-06-23T00:00:02Z",
+        "sequence": 5,
+        "timestamp": "2026-06-23T00:00:04Z",
         "sender": "agent.researcher",
         "receiver": "tool.search",
         "intent": "tool_call",
@@ -121,8 +177,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 4,
-        "timestamp": "2026-06-23T00:00:03Z",
+        "sequence": 6,
+        "timestamp": "2026-06-23T00:00:05Z",
         "sender": "tool.search",
         "receiver": "agent.researcher",
         "intent": "tool_result",
@@ -156,8 +212,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 5,
-        "timestamp": "2026-06-23T00:00:04Z",
+        "sequence": 7,
+        "timestamp": "2026-06-23T00:00:06Z",
         "sender": "agent.researcher",
         "receiver": "agent.planner",
         "intent": "response",
@@ -181,8 +237,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 6,
-        "timestamp": "2026-06-23T00:00:05Z",
+        "sequence": 8,
+        "timestamp": "2026-06-23T00:00:07Z",
         "sender": "agent.planner",
         "receiver": "agent.writer",
         "intent": "delegate",
@@ -202,8 +258,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 7,
-        "timestamp": "2026-06-23T00:00:06Z",
+        "sequence": 9,
+        "timestamp": "2026-06-23T00:00:08Z",
         "sender": "agent.writer",
         "receiver": "tool.model",
         "intent": "tool_call",
@@ -226,8 +282,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 8,
-        "timestamp": "2026-06-23T00:00:07Z",
+        "sequence": 10,
+        "timestamp": "2026-06-23T00:00:09Z",
         "sender": "tool.model",
         "receiver": "agent.writer",
         "intent": "tool_result",
@@ -249,8 +305,8 @@
         "trace_id": "trace_research_to_write_run",
         "task_id": "task_research_to_write_run",
         "conversation_id": "conv_research_to_write_run",
-        "sequence": 9,
-        "timestamp": "2026-06-23T00:00:08Z",
+        "sequence": 11,
+        "timestamp": "2026-06-23T00:00:010Z",
         "sender": "agent.writer",
         "receiver": "human.user",
         "intent": "response",

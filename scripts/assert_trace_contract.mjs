@@ -38,6 +38,26 @@ assert(
   messages.some(
     (message) =>
       message.envelope.sender === "agent.planner" &&
+      message.envelope.receiver === "tool.capability_registry" &&
+      message.envelope.intent === "tool_call" &&
+      message.content.data.capability === "research.web"
+  ),
+  "Trace must include Planner capability discovery for research.web"
+);
+assert(
+  messages.some(
+    (message) =>
+      message.envelope.sender === "tool.capability_registry" &&
+      message.envelope.receiver === "agent.planner" &&
+      message.envelope.intent === "tool_result" &&
+      message.content.data.matches?.includes("agent.researcher")
+  ),
+  "Trace must include Capability Registry result for Research Agent"
+);
+assert(
+  messages.some(
+    (message) =>
+      message.envelope.sender === "agent.planner" &&
       message.envelope.receiver === "agent.researcher" &&
       message.envelope.intent === "delegate"
   ),

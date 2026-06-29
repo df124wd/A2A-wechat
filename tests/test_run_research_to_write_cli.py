@@ -130,6 +130,57 @@ class RunResearchToWriteCliTest(unittest.TestCase):
         )
         self.assertIn("response_summary", model_result["content"]["data"])
 
+    def test_generated_trace_discovers_research_capability_before_delegation(self) -> None:
+        output_path, run_result = self.run_scenario("Explain A2A communication.")
+
+        self.assertEqual(run_result.returncode, 0, run_result.stderr + run_result.stdout)
+        trace = json.loads(output_path.read_text(encoding="utf-8"))
+
+        participant_ids = {participant["participant_id"] for participant in trace["participants"]}
+        self.assertIn("tool.capability_registry", participant_ids)
+
+        messages = trace["messages"]
+        discovery_call = next(
+            message
+            for message in messages
+            if message["envelope"]["sender"] == "agent.planner"
+            and message["envelope"].get("receiver") == "tool.capability_registry"
+            and message["envelope"]["intent"] == "tool_call"
+        )
+        self.assertEqual(discovery_call["content"]["data"]["tool_name"], "capability_registry")
+        self.assertEqual(discovery_call["content"]["data"]["capability"], "research.web")
+
+        discovery_result = next(
+            message
+            for message in messages
+            if message["envelope"]["sender"] == "tool.capability_registry"
+            and message["envelope"].get("receiver") == "agent.planner"
+            and message["envelope"]["intent"] == "tool_result"
+        )
+        self.assertEqual(
+            discovery_result["envelope"]["correlation_id"],
+            discovery_call["envelope"]["correlation_id"],
+        )
+        self.assertEqual(discovery_result["content"]["data"]["matches"][0], "agent.researcher")
+
+        research_delegate = next(
+            message
+            for message in messages
+            if message["envelope"]["message_id"] == "msg_planner_delegate_research"
+        )
+        self.assertLess(
+            discovery_result["envelope"]["sequence"],
+            research_delegate["envelope"]["sequence"],
+        )
+        self.assertEqual(
+            research_delegate["content"]["data"]["selected_by_capability"],
+            "research.web",
+        )
+        self.assertEqual(
+            research_delegate["content"]["data"]["source_message_id"],
+            discovery_result["envelope"]["message_id"],
+        )
+
     def test_cli_defaults_output_to_ignored_trace_runs_directory(self) -> None:
         result = subprocess.run(
             [

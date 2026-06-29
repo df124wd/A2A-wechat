@@ -26,10 +26,15 @@ test("orders Timeline entries by message sequence", () => {
 
   expect(entries[0]).toHaveTextContent("human.user");
   expect(entries[0]).toHaveTextContent("request");
+  expect(entries[1]).toHaveTextContent("msg_planner_discover_research");
   expect(entries[1]).toHaveTextContent("agent.planner");
-  expect(entries[1]).toHaveTextContent("delegate");
-  expect(entries[2]).toHaveTextContent("agent.researcher");
-  expect(entries[2]).toHaveTextContent("tool_call");
+  expect(entries[1]).toHaveTextContent("tool_call");
+  expect(entries[2]).toHaveTextContent("msg_capability_research_result");
+  expect(entries[2]).toHaveTextContent("tool.capability_registry");
+  expect(entries[2]).toHaveTextContent("tool_result");
+  expect(entries[3]).toHaveTextContent("msg_planner_delegate_research");
+  expect(entries[3]).toHaveTextContent("agent.planner");
+  expect(entries[3]).toHaveTextContent("delegate");
 });
 
 test("renders model service interaction in the curated Timeline", () => {
@@ -40,4 +45,14 @@ test("renders model service interaction in the curated Timeline", () => {
   expect(within(timeline).getByText("msg_writer_model_call")).toBeInTheDocument();
   expect(within(timeline).getByText("msg_writer_model_result")).toBeInTheDocument();
   expect(within(timeline).getByText("tool.model")).toBeInTheDocument();
+});
+
+test("renders capability discovery in the curated Timeline", () => {
+  render(<TraceApp />);
+
+  const timeline = screen.getByRole("region", { name: "Timeline" });
+
+  expect(within(timeline).getByText("msg_planner_discover_research")).toBeInTheDocument();
+  expect(within(timeline).getByText("msg_capability_research_result")).toBeInTheDocument();
+  expect(within(timeline).getByText("tool.capability_registry")).toBeInTheDocument();
 });
