@@ -1,6 +1,6 @@
 {
   "protocol_version": "a2a-trace-v0",
-  "trace_id": "trace_research_to_write_seed",
+  "trace_id": "trace_research_to_write_run",
   "participants": [
     {
       "participant_id": "human.user",
@@ -12,34 +12,50 @@
       "participant_id": "agent.planner",
       "kind": "agent",
       "display_name": "Planner Agent",
-      "capabilities": ["plan.research_to_write"]
+      "capabilities": [
+        "plan.research_to_write"
+      ]
     },
     {
       "participant_id": "agent.researcher",
       "kind": "agent",
       "display_name": "Research Agent",
-      "capabilities": ["research.web"]
+      "capabilities": [
+        "research.web"
+      ]
     },
     {
       "participant_id": "agent.writer",
       "kind": "agent",
       "display_name": "Writer Agent",
-      "capabilities": ["write.summary"]
+      "capabilities": [
+        "write.summary"
+      ]
     },
     {
       "participant_id": "tool.search",
       "kind": "tool",
       "display_name": "Search Tool",
-      "capabilities": ["search.web"]
+      "capabilities": [
+        "search.web"
+      ]
+    },
+    {
+      "participant_id": "tool.model",
+      "kind": "tool",
+      "display_name": "Model Service",
+      "capabilities": [
+        "model.chat_completion"
+      ]
     }
   ],
   "messages": [
     {
       "envelope": {
         "message_id": "msg_user_request",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 1,
         "timestamp": "2026-06-23T00:00:00Z",
         "sender": "human.user",
@@ -48,18 +64,18 @@
         "correlation_id": "corr_user_task"
       },
       "content": {
-        "summary": "User asks for a short research-backed explanation of A2A communication.",
+        "summary": "Human asks Planner Agent to complete a Research-to-Write task.",
         "data": {
-          "goal": "Explain how agents exchange information in an A2A system."
+          "goal": "Explain A2A communication."
         }
       }
     },
     {
       "envelope": {
         "message_id": "msg_planner_delegate_research",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 2,
         "timestamp": "2026-06-23T00:00:01Z",
         "sender": "agent.planner",
@@ -69,18 +85,18 @@
         "reply_to": "msg_user_request"
       },
       "content": {
-        "summary": "Planner asks Research Agent to gather source material.",
+        "summary": "Planner Agent delegates research to Research Agent.",
         "data": {
-          "goal": "Find basic source material about agent-to-agent communication."
+          "goal": "Gather source material for: Explain A2A communication."
         }
       }
     },
     {
       "envelope": {
         "message_id": "msg_research_tool_call",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 3,
         "timestamp": "2026-06-23T00:00:02Z",
         "sender": "agent.researcher",
@@ -90,11 +106,11 @@
         "reply_to": "msg_planner_delegate_research"
       },
       "content": {
-        "summary": "Research Agent searches for A2A communication references.",
+        "summary": "Research Agent calls Search Tool for source material.",
         "data": {
           "tool_name": "search",
           "arguments": {
-            "query": "agent to agent communication protocol"
+            "query": "Explain A2A communication."
           }
         }
       }
@@ -102,9 +118,9 @@
     {
       "envelope": {
         "message_id": "msg_search_result",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 4,
         "timestamp": "2026-06-23T00:00:03Z",
         "sender": "tool.search",
@@ -114,15 +130,21 @@
         "reply_to": "msg_research_tool_call"
       },
       "content": {
-        "summary": "Search Tool returns raw retrieval results.",
+        "summary": "Search Tool returns raw fixture retrieval results.",
         "data": {
-          "query": "agent to agent communication protocol",
+          "query": "Explain A2A communication.",
           "results": [
             {
               "rank": 1,
-              "title": "Agent communication overview",
-              "url": "https://example.com/a2a-overview",
-              "snippet": "Agents coordinate by exchanging structured messages."
+              "title": "A2A Communication Basics",
+              "url": "https://example.com/a2a-communication-basics",
+              "snippet": "A2A communication coordinates agents through structured messages, routing, intent, and traceable results."
+            },
+            {
+              "rank": 2,
+              "title": "Traceable Agent Collaboration",
+              "url": "https://example.com/traceable-agent-collaboration",
+              "snippet": "Inspectable traces help developers understand delegation, tool calls, and final responses."
             }
           ]
         }
@@ -131,9 +153,9 @@
     {
       "envelope": {
         "message_id": "msg_research_response",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 5,
         "timestamp": "2026-06-23T00:00:04Z",
         "sender": "agent.researcher",
@@ -143,20 +165,22 @@
         "reply_to": "msg_planner_delegate_research"
       },
       "content": {
-        "summary": "Research Agent summarizes the raw search result for the Planner.",
+        "summary": "Research Agent interprets raw search results for the Planner.",
         "data": {
           "findings": [
-            "A2A systems need structured messages, routing, and traceable results."
-          ]
+            "A2A communication uses structured messages with routing and intent.",
+            "Trace records make collaboration inspectable."
+          ],
+          "source_message_id": "msg_search_result"
         }
       }
     },
     {
       "envelope": {
         "message_id": "msg_planner_delegate_writer",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
         "sequence": 6,
         "timestamp": "2026-06-23T00:00:05Z",
         "sender": "agent.planner",
@@ -166,30 +190,77 @@
         "reply_to": "msg_research_response"
       },
       "content": {
-        "summary": "Planner asks Writer Agent to produce the final answer.",
+        "summary": "Planner Agent delegates final writing to Writer Agent.",
         "data": {
-          "goal": "Write a concise explanation using the research findings."
+          "goal": "Write the final response from the research findings."
+        }
+      }
+    },
+    {
+      "envelope": {
+        "message_id": "msg_writer_model_call",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
+        "sequence": 7,
+        "timestamp": "2026-06-23T00:00:06Z",
+        "sender": "agent.writer",
+        "receiver": "tool.model",
+        "intent": "tool_call",
+        "correlation_id": "corr_model_write",
+        "reply_to": "msg_planner_delegate_writer"
+      },
+      "content": {
+        "summary": "Writer Agent calls the model service to draft the final response.",
+        "data": {
+          "tool_name": "model",
+          "provider": "mock",
+          "model": "mock",
+          "prompt_summary": "Write a concise final answer for the user's task. Task: Explain A2A communication. Research findings: - A2A communication uses structured messages with routi..."
+        }
+      }
+    },
+    {
+      "envelope": {
+        "message_id": "msg_writer_model_result",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
+        "sequence": 8,
+        "timestamp": "2026-06-23T00:00:07Z",
+        "sender": "tool.model",
+        "receiver": "agent.writer",
+        "intent": "tool_result",
+        "correlation_id": "corr_model_write",
+        "reply_to": "msg_writer_model_call"
+      },
+      "content": {
+        "summary": "Model Service returns a draft response to Writer Agent.",
+        "data": {
+          "provider": "mock",
+          "model": "mock",
+          "response_summary": "A2A communication coordinates agents through structured messages that carry routing, intent, content, correlation, and trace information."
         }
       }
     },
     {
       "envelope": {
         "message_id": "msg_writer_response",
-        "trace_id": "trace_research_to_write_seed",
-        "task_id": "task_research_to_write_seed",
-        "conversation_id": "conv_research_to_write_seed",
-        "sequence": 7,
-        "timestamp": "2026-06-23T00:00:06Z",
+        "trace_id": "trace_research_to_write_run",
+        "task_id": "task_research_to_write_run",
+        "conversation_id": "conv_research_to_write_run",
+        "sequence": 9,
+        "timestamp": "2026-06-23T00:00:08Z",
         "sender": "agent.writer",
         "receiver": "human.user",
         "intent": "response",
         "correlation_id": "corr_user_task",
-        "reply_to": "msg_user_request"
+        "reply_to": "msg_writer_model_result"
       },
       "content": {
-        "summary": "Writer Agent returns the final explanation.",
+        "summary": "Writer Agent returns the final response.",
         "data": {
-          "answer": "Agents communicate by sending structured messages with routing, intent, content, and trace information."
+          "answer": "A2A communication coordinates agents through structured messages that carry routing, intent, content, correlation, and trace information."
         }
       }
     }
@@ -197,6 +268,6 @@
   "outcome": {
     "status": "completed",
     "final_message_id": "msg_writer_response",
-    "summary": "The Research-to-Write Scenario completed with a final Writer Agent response."
+    "summary": "The Research-to-Write Scenario completed with a Writer Agent response."
   }
 }

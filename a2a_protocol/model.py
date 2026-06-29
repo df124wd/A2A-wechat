@@ -12,6 +12,14 @@ class ModelConfigError(Exception):
 
 
 class ModelClient(Protocol):
+    @property
+    def provider(self) -> str:
+        pass
+
+    @property
+    def model(self) -> str:
+        pass
+
     def complete(self, prompt: str) -> str:
         pass
 
@@ -42,6 +50,9 @@ class UrllibJsonTransport:
 
 @dataclass(frozen=True)
 class MockModelClient:
+    provider: str = "mock"
+    model: str = "mock"
+
     def complete(self, prompt: str) -> str:
         return (
             "A2A communication coordinates agents through structured "
@@ -55,6 +66,7 @@ class AlibabaModelClient:
     api_key: str
     base_url: str
     model: str = "qwen-plus"
+    provider: str = "alibaba"
     transport: JsonTransport = UrllibJsonTransport()
 
     def complete(self, prompt: str) -> str:

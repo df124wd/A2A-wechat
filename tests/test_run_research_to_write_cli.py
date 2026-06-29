@@ -81,13 +81,54 @@ class RunResearchToWriteCliTest(unittest.TestCase):
         self.assertIn(("agent.planner", "agent.writer", "delegate"), observed_steps)
         self.assertIn(("agent.writer", "human.user", "response"), observed_steps)
 
-        writer_tool_calls = [
+        writer_search_tool_calls = [
             message
             for message in messages
             if message["envelope"]["sender"] == "agent.writer"
             and message["envelope"]["intent"] == "tool_call"
+            and message["envelope"].get("receiver") == "tool.search"
         ]
-        self.assertEqual(writer_tool_calls, [])
+        self.assertEqual(writer_search_tool_calls, [])
+
+    def test_generated_trace_makes_writer_model_call_observable(self) -> None:
+        output_path, run_result = self.run_scenario("Explain A2A communication.")
+
+        self.assertEqual(run_result.returncode, 0, run_result.stderr + run_result.stdout)
+        trace = json.loads(output_path.read_text(encoding="utf-8"))
+
+        participant_ids = {participant["participant_id"] for participant in trace["participants"]}
+        self.assertIn("tool.model", participant_ids)
+
+        messages = trace["messages"]
+        model_call = next(
+            message
+            for message in messages
+            if message["envelope"]["sender"] == "agent.writer"
+            and message["envelope"].get("receiver") == "tool.model"
+            and message["envelope"]["intent"] == "tool_call"
+        )
+        self.assertEqual(model_call["content"]["data"]["tool_name"], "model")
+        self.assertEqual(model_call["content"]["data"]["provider"], "mock")
+        self.assertEqual(model_call["content"]["data"]["model"], "mock")
+        self.assertIn("prompt_summary", model_call["content"]["data"])
+        self.assertNotIn("api_key", json.dumps(model_call["content"]["data"]).lower())
+
+        model_result = next(
+            message
+            for message in messages
+            if message["envelope"]["sender"] == "tool.model"
+            and message["envelope"].get("receiver") == "agent.writer"
+            and message["envelope"]["intent"] == "tool_result"
+        )
+        self.assertEqual(
+            model_result["envelope"]["correlation_id"],
+            model_call["envelope"]["correlation_id"],
+        )
+        self.assertEqual(
+            model_result["envelope"]["reply_to"],
+            model_call["envelope"]["message_id"],
+        )
+        self.assertIn("response_summary", model_result["content"]["data"])
 
     def test_cli_defaults_output_to_ignored_trace_runs_directory(self) -> None:
         result = subprocess.run(

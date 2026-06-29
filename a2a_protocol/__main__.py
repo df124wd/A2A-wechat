@@ -57,6 +57,13 @@ def writer_prompt(task: str, findings: list[str]) -> str:
     )
 
 
+def summarize_text(text: str, limit: int = 160) -> str:
+    normalized = " ".join(text.split())
+    if len(normalized) <= limit:
+        return normalized
+    return normalized[: limit - 3].rstrip() + "..."
+
+
 def research_to_write_trace(task: str, model_client: ModelClient | None = None) -> dict:
     trace_id = "trace_research_to_write_run"
     task_id = "task_research_to_write_run"
@@ -67,7 +74,8 @@ def research_to_write_trace(task: str, model_client: ModelClient | None = None) 
         "A2A communication uses structured messages with routing and intent.",
         "Trace records make collaboration inspectable.",
     ]
-    writer_answer = model.complete(writer_prompt(task, findings))
+    prompt = writer_prompt(task, findings)
+    writer_answer = model.complete(prompt)
 
     return {
         "protocol_version": "a2a-trace-v0",
@@ -102,6 +110,12 @@ def research_to_write_trace(task: str, model_client: ModelClient | None = None) 
                 "kind": "tool",
                 "display_name": "Search Tool",
                 "capabilities": ["search.web"],
+            },
+            {
+                "participant_id": "tool.model",
+                "kind": "tool",
+                "display_name": "Model Service",
+                "capabilities": ["model.chat_completion"],
             },
         ],
         "messages": [
@@ -220,16 +234,61 @@ def research_to_write_trace(task: str, model_client: ModelClient | None = None) 
             },
             {
                 "envelope": envelope(
-                    "msg_writer_response",
+                    "msg_writer_model_call",
                     trace_id,
                     task_id,
                     conversation_id,
                     7,
                     "agent.writer",
+                    "tool.model",
+                    "tool_call",
+                    "corr_model_write",
+                    "msg_planner_delegate_writer",
+                ),
+                "content": {
+                    "summary": "Writer Agent calls the model service to draft the final response.",
+                    "data": {
+                        "tool_name": "model",
+                        "provider": model.provider,
+                        "model": model.model,
+                        "prompt_summary": summarize_text(prompt),
+                    },
+                },
+            },
+            {
+                "envelope": envelope(
+                    "msg_writer_model_result",
+                    trace_id,
+                    task_id,
+                    conversation_id,
+                    8,
+                    "tool.model",
+                    "agent.writer",
+                    "tool_result",
+                    "corr_model_write",
+                    "msg_writer_model_call",
+                ),
+                "content": {
+                    "summary": "Model Service returns a draft response to Writer Agent.",
+                    "data": {
+                        "provider": model.provider,
+                        "model": model.model,
+                        "response_summary": summarize_text(writer_answer),
+                    },
+                },
+            },
+            {
+                "envelope": envelope(
+                    "msg_writer_response",
+                    trace_id,
+                    task_id,
+                    conversation_id,
+                    9,
+                    "agent.writer",
                     "human.user",
                     "response",
                     "corr_user_task",
-                    "msg_user_request",
+                    "msg_writer_model_result",
                 ),
                 "content": {
                     "summary": "Writer Agent returns the final response.",

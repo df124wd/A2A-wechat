@@ -17,7 +17,7 @@ test("inspects the selected Message Envelope and Content", async () => {
   expect(within(inspector).getByText("corr_search")).toBeInTheDocument();
   expect(within(inspector).getByText("msg_planner_delegate_research")).toBeInTheDocument();
   expect(
-    within(inspector).getByText("Research Agent searches for A2A communication references.")
+    within(inspector).getByText("Research Agent calls Search Tool for source material.")
   ).toBeInTheDocument();
-  expect(within(inspector).getByText(/agent to agent communication protocol/i)).toBeInTheDocument();
+  expect(within(inspector).getByText(/Explain A2A communication/i)).toBeInTheDocument();
 });

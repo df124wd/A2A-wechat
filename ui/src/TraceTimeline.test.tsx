@@ -12,7 +12,7 @@ test("renders the curated Trace as a Timeline", () => {
   expect(within(timeline).getByText("request")).toBeInTheDocument();
   expect(
     within(timeline).getByText(
-      "User asks for a short research-backed explanation of A2A communication."
+      "Human asks Planner Agent to complete a Research-to-Write task."
     )
   ).toBeInTheDocument();
 });
@@ -30,4 +30,14 @@ test("orders Timeline entries by message sequence", () => {
   expect(entries[1]).toHaveTextContent("delegate");
   expect(entries[2]).toHaveTextContent("agent.researcher");
   expect(entries[2]).toHaveTextContent("tool_call");
+});
+
+test("renders model service interaction in the curated Timeline", () => {
+  render(<TraceApp />);
+
+  const timeline = screen.getByRole("region", { name: "Timeline" });
+
+  expect(within(timeline).getByText("msg_writer_model_call")).toBeInTheDocument();
+  expect(within(timeline).getByText("msg_writer_model_result")).toBeInTheDocument();
+  expect(within(timeline).getByText("tool.model")).toBeInTheDocument();
 });

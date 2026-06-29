@@ -65,6 +65,24 @@ assert(
   messages.some(
     (message) =>
       message.envelope.sender === "agent.writer" &&
+      message.envelope.receiver === "tool.model" &&
+      message.envelope.intent === "tool_call"
+  ),
+  "Trace must include Writer Agent model tool_call"
+);
+assert(
+  messages.some(
+    (message) =>
+      message.envelope.sender === "tool.model" &&
+      message.envelope.receiver === "agent.writer" &&
+      message.envelope.intent === "tool_result"
+  ),
+  "Trace must include Model Service tool_result"
+);
+assert(
+  messages.some(
+    (message) =>
+      message.envelope.sender === "agent.writer" &&
       message.envelope.receiver === "human.user" &&
       message.envelope.intent === "response"
   ),
